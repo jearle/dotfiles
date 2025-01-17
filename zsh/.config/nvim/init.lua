@@ -1,0 +1,11 @@
+require('options')
+require('options-netrw')
+require('keymap')
+require('config-lazy')
+require('config-treesitter')
+require('config-mason')
+require('config-cmp')
+require('config-lspconfig')
+require('config-mason-lspconfig')
+require('config-autopairs')
+
