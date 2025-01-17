@@ -1,4 +1,5 @@
 BIN_BREW=/opt/homebrew/bin
+BIN_BREW_CASK=/opt/homebrew/Cellar
 
 # install brew if it doesn't exit
 if [ ! -f "$BIN_BREW/brew" ]; then
@@ -28,13 +29,18 @@ PACKAGES=(
   "rbenv"
   "python@3.13"
   "rust"
+  "bun"
+  "deno"
+  "llvm"
   "cmake"
+  "tree"
 )
 for package in "${PACKAGES[@]}"; do
   if brew list --formula | grep -q "^$package$"; then
   else
-    echo "$package is not installed. Installing..."
-    brew install "$package"
+    prefix=$([[ "$package" == "bun" ]] && echo "oven-sh/bun/" || echo "")
+    echo "$prefix$package is not installed. Installing..."
+    brew install "$prefix$package"
   fi
 done
 
@@ -54,4 +60,11 @@ for package_cask in "${PACKAGE_CASKS[@]}"; do
     brew install --cask "$package_cask"
   fi
 done
+
+LLVM="$BIN_BREW_CASK/llvm/19.1.7/bin"
+
+export PATH=""\
+"$LLVM"\
+":$PATH"\
+""
 
