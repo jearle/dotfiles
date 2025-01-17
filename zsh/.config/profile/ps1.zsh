@@ -14,6 +14,14 @@ LBLUE='%F{cyan}'
 GRAY='%F{white}'
 NORMAL='%f%b'
 
+export GIT_PS1_SHOWDIRTYSTATE=1
+export GIT_PS1_SHOWSTASHSTATE=1
+export GIT_PS1_SHOWUNTRACKEDFILES=1
+export GIT_PS1_SHOWUPSTREAM="auto"
+export GIT_PS1_STATESEPARATOR=' '
+export GIT_PS1_DESCRIBE_STYLE="branch"
+export GIT_PS1_SHOWCOLORHINTS=1
+
 MY_GIT='$(__git_ps1)'
 TIME='%* | %D{%Y-%m-%d}'
 MY_PATH='%~'
@@ -27,3 +35,4 @@ ${BBLUE}${MY_GIT}
  ${RED}> ${NORMAL}
 EOF
 )
+
