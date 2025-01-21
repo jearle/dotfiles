@@ -34,6 +34,7 @@ PACKAGES=(
   "llvm"
   "cmake"
   "tree"
+  "ollama"
 )
 for package in "${PACKAGES[@]}"; do
   if brew list --formula | grep -q "^$package$"; then
