@@ -35,6 +35,7 @@ PACKAGES=(
   "cmake"
   "tree"
   "ollama"
+  "freetype"
 )
 for package in "${PACKAGES[@]}"; do
   if brew list --formula | grep -q "^$package$"; then
