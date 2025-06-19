@@ -9,6 +9,8 @@ o.tabstop = 2
 o.shiftwidth = 2
 o.softtabstop = 2
 o.wrap = false
+o.scrolloff = 8
+o.sidescrolloff = 8
 
 -- write's a new line to the end of the file
 vim.api.nvim_create_autocmd("BufWritePre", {

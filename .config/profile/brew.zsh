@@ -35,7 +35,10 @@ PACKAGES=(
   "cmake"
   "tree"
   "ollama"
-  "freetype"
+  "bzip2"
+  "zlib"
+  "libpng"
+  "pandoc"
 )
 for package in "${PACKAGES[@]}"; do
   if brew list --formula | grep -q "^$package$"; then
@@ -48,6 +51,7 @@ done
 
 # install brew casks if they don't exist
 PACKAGE_CASKS=(
+  "basictex"
   "visual-studio-code"
   "ghostty"
   "rectangle"

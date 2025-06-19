@@ -1,0 +1,58 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+//
+{
+  "buffer_font_size": 14, // Assuming a default font size
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "One Dark"
+  },
+  "tab_size": 2,
+  "format_on_paste": true,
+  "project_panel": {
+    "compact_folders": false
+  },
+  "telemetry": {
+    "metrics": false,
+    "diagnostics": false
+  },
+  "scrollbar": {
+    "show": "never" // This is Zed's equivalent of disabling the minimap
+  },
+  "show_whitespaces": "all",
+  "vim_mode": true,
+  "vim": {
+    "leader": " ",
+    "use_system_clipboard": "always", // Zed uses "always" or "never"
+    "toggle_relative_line_numbers": true
+  },
+  "formatter": "prettier",
+  "format_on_save": "on",
+  "languages": {
+    "JavaScript": {
+      "format_on_save": "on"
+    },
+    "TypeScript": {
+      "format_on_save": "on"
+    },
+    "TSX": {
+      "format_on_save": "on"
+    },
+    "JSON": {
+      "format_on_save": "on"
+    }
+    // Add other languages as needed
+  },
+  "exclude_files": [
+    // This array is intentionally empty.
+    // Your VS Code config disabled the default exclusions,
+    // so an empty array in Zed achieves the same result of showing all files.
+  ]
+}

@@ -7,6 +7,9 @@ mason_lspconfig.setup({
     'ruby_lsp',
     'lua_ls',
     'gopls',
+    'clangd',
+    'bashls',
+    'yamlls',
   }
 })
 

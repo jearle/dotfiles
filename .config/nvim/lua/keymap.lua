@@ -9,6 +9,8 @@ local options = { noremap = true, silent = true }
 map('n', '<leader>w', ':w<cr>', options)
 map('n', '<leader>quit', ':q<cr>', options)
 map('n', '<leader>e', ':Ex!<cr>', options)
+map('n', '<leader>bn', ':bn<cr>', options)
+map('n', '<leader>bp', ':bp<cr>', options)
 
 map("n", "y", '"+y', options)
 map("v", "y", '"+y', options)
