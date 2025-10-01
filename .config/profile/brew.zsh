@@ -23,7 +23,7 @@ PACKAGES=(
   "fzf"
   "fd"
   "ripgrep"
-  "nvm"
+  "fnm"
   "go"
   "zig"
   "rbenv"
@@ -58,6 +58,7 @@ PACKAGE_CASKS=(
   "karabiner-elements"
   "caffeine"
   "jiggler"
+  "docker"
 )
 for package_cask in "${PACKAGE_CASKS[@]}"; do
   if brew list --cask | grep -q "^$package_cask$"; then
