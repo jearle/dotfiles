@@ -1,0 +1,10 @@
+# Repository files, never applied.
+README.md
+archive/
+archive/**
+
+{{- if ne .chezmoi.os "darwin" }}
+# macOS only.
+Library/
+Library/**
+{{- end }}
