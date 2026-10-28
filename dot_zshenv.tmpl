@@ -1,0 +1,10 @@
+# uv
+export PATH="$HOME/.local/bin:$PATH"
+
+# homebrew + mise + zoxide for non-interactive shells (agents)
+case ":$PATH:" in *":$HOME/.local/share/mise/shims:"*) ;; *) export PATH="$HOME/.local/share/mise/shims:$PATH" ;; esac
+{{ if eq .chezmoi.os "darwin" -}}
+case ":$PATH:" in *":/opt/homebrew/bin:"*) ;; *) export PATH="/opt/homebrew/bin:$PATH" ;; esac
+{{ end -}}
+. "$HOME/.config/profile/zoxide.sh"
+export BASH_ENV="$HOME/.bashrc"

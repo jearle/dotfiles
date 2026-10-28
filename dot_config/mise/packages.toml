@@ -1,0 +1,81 @@
+# OS-Specific Package Manager Targets
+
+[macos]
+formulas = [
+  "git",
+  "llvm",
+  "llama.cpp",
+  "bzip2",
+  "zlib",
+  "libpng",
+  "asitop",
+  "git-filter-repo",
+  "gyb",
+  "bash",
+  "gromgit/fuse/ntfs-3g-mac",
+  "slackdump",
+  "jearle/local/tart",
+  "podman"
+]
+
+casks = [
+  "basictex",
+  "visual-studio-code",
+  "ghostty",
+  "rectangle",
+  "karabiner-elements",
+  "caffeine",
+  "jiggler",
+  "displaylink",
+  "stats",
+  "brave-browser",
+  "google-chrome",
+  "discord",
+  "slack",
+  "obsidian",
+  "db-browser-for-sqlite",
+  "inkscape",
+  "spotify"
+]
+
+[linux]
+packages = [
+  "build-essential",
+  "curl",
+  "git",
+  "zlib1g-dev",
+  "libbz2-dev",
+  "libpng-dev",
+  "btop",
+  "podman",
+  "caffeine"
+]
+
+flatpak = [
+  "com.spotify.Client",
+  "com.visualstudio.code",
+  "com.discordapp.Discord",
+  "com.slack.Slack",
+  "md.obsidian.Obsidian",
+  "com.brave.Browser",
+  "com.google.Chrome",
+  "org.sqlitebrowser.sqlitebrowser",
+  "org.inkscape.Inkscape"
+]
+
+[windows]
+winget = [
+  "Spotify.Spotify",
+  "Microsoft.VisualStudioCode",
+  "RedHat.Podman",
+  "Obsidian.Obsidian",
+  "Discord.Discord",
+  "SlackTechnologies.Slack",
+  "Brave.Brave",
+  "Google.Chrome",
+  "DBBrowserForSQLite.DBBrowserForSQLite",
+  "Inkscape.Inkscape",
+  "Microsoft.PowerToys",
+  "MiKTeX.MiKTeX",
+  "Microsoft.OpenSSH.Preview"
+]

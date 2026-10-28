@@ -1,0 +1,39 @@
+id = "local.keymap"
+name = "Keymap"
+version = "0.2.0"
+min_herdr_version = "0.8.0"
+description = "Pin a cheat sheet on the last Agents sidebar row"
+platforms = ["macos", "linux"]
+
+[[startup]]
+command = ["bash", "startup.sh"]
+
+[[events]]
+on = "workspace.created"
+command = ["bash", "startup.sh"]
+
+[[events]]
+on = "workspace.closed"
+command = ["bash", "startup.sh"]
+
+[[events]]
+on = "pane.created"
+command = ["bash", "startup.sh"]
+
+[[events]]
+on = "pane.closed"
+command = ["bash", "startup.sh"]
+
+[[events]]
+on = "pane.moved"
+command = ["bash", "startup.sh"]
+
+[[actions]]
+id = "move-workspace-up"
+title = "Slide workspace up"
+command = ["bash", "move-workspace.sh", "up"]
+
+[[actions]]
+id = "move-workspace-down"
+title = "Slide workspace down"
+command = ["bash", "move-workspace.sh", "down"]

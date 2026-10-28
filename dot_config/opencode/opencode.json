@@ -1,0 +1,50 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "mlx": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "MLX (local)",
+      "options": {
+        "baseURL": "http://127.0.0.1:8080/v1"
+      },
+      "models": {
+        "mlx-community/Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit": {
+          "name": "Josiefied Qwen3 30B A3B Abliterated 8-bit (local)",
+          "options": {
+            "temperature": 0.7,
+            "top_p": 0.9,
+            "top_k": 40,
+            "min_p": 0.05,
+            "repetition_penalty": 1.15,
+            "repetition_context_size": 512,
+            "max_tokens": 4096
+          }
+        },
+        "mlx-community/gemma-4-26b-a4b-it-4bit": {
+          "name": "Gemma 4 26B A4B (local)",
+          "options": {
+            "temperature": 0.85,
+            "top_p": 0.92,
+            "top_k": 64,
+            "min_p": 0.05,
+            "repetition_penalty": 1.18,
+            "repetition_context_size": 256,
+            "max_tokens": 4096
+          }
+        },
+        "Jiunsong/supergemma4-26b-uncensored-mlx-4bit-v2": {
+          "name": "SuperGemma4 26B Uncensored (local)",
+          "options": {
+            "temperature": 0.9,
+            "top_p": 0.9,
+            "top_k": 50,
+            "min_p": 0.08,
+            "repetition_penalty": 1.25,
+            "repetition_context_size": 512,
+            "max_tokens": 2048
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+onboarding = false
+[ui]
+agent_panel_sort = "spaces"
+sidebar_width = 23
+sidebar_min_width = 19
+sidebar_max_width = 29
+
+[ui.sidebar.spaces]
+row_gap = 1
+
+[ui.sidebar.agents]
+row_gap = 0
+rows = [
+  ["state_icon", "agent"],
+  [{ token = "$hk_title", bold = true }],
+  [{ token = "$hk1", dim = true }],
+  [{ token = "$hk2", dim = true }],
+  [{ token = "$hk3", dim = true }],
+  [{ token = "$hk4", dim = true }],
+  [{ token = "$hk5", dim = true }],
+  [{ token = "$hk6", dim = true }],
+  [{ token = "$hk7", dim = true }],
+  [{ token = "$hk8", dim = true }],
+  [{ token = "$hk9", dim = true }],
+]
+
+[keys]
+# Workspaces
+# Also creates tab 1 and a pane.
+new_workspace = "prefix+shift+n"
+# Focus the workspace first.
+rename_workspace = "prefix+shift+w"
+# Then ↑/↓ to select the workspace above/below. Does not reorder the list.
+workspace_picker = "prefix+w"
+switch_workspace = "prefix+shift+1..9"
+
+# Agents
+focus_agent = "prefix+alt+1..9"
+
+# Tabs
+# In the current workspace.
+new_tab = "prefix+c"
+# Focus the tab first.
+rename_tab = "prefix+shift+t"
+move_tab_previous = "prefix+shift+p"
+move_tab_next = "prefix+shift+]"
+
+[[keys.command]]
+key = "prefix+shift+up"
+type = "plugin_action"
+command = "local.keymap.move-workspace-up"
+description = "slide workspace up"
+
+[[keys.command]]
+key = "prefix+shift+down"
+type = "plugin_action"
+command = "local.keymap.move-workspace-down"
+description = "slide workspace down"
+
+[[keys.command]]
+key = "prefix+shift+r"
+type = "shell"
+command = "{{ .chezmoi.homeDir }}/.local/bin/herdr-spawn-review-workspace"
+description = "Spawn review workspace with all coding agents"

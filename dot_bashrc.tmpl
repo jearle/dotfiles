@@ -1,0 +1,4 @@
+{{ if eq .chezmoi.os "darwin" -}}
+case ":$PATH:" in *":/opt/homebrew/bin:"*) ;; *) export PATH="/opt/homebrew/bin:$PATH" ;; esac
+{{ end -}}
+. "$HOME/.config/profile/zoxide.sh"

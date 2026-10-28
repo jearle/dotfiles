@@ -1,0 +1,13 @@
+# This is Git's per-user configuration file.
+[user]
+	email = earle.jesse@gmail.com
+# Please adapt and uncomment the following lines:
+#	name = Jesse Earle
+#	email = earle.jesse@gmail.com
+[alias]
+	reauthor = commit --amend --no-edit --reset-author
+	forcelease = push --force-with-lease
+	pushu = push -u origin HEAD
+	diffname = diff --name-only
+	addcommit = "!f() { git add --all . && git commit -m \"$*\"; }; f"
+	checkoutmainpull = !git checkout main && git pull

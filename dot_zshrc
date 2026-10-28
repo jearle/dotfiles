@@ -1,0 +1,110 @@
+# Secrets (DISCORD_WEBHOOK_AI, VENICE_API_KEY, ...): not in this repo.
+[ -f "$HOME/.config/env/secrets.zsh" ] && . "$HOME/.config/env/secrets.zsh"
+
+CONFIG=$HOME/.config
+PROFILE=$CONFIG/profile
+
+. $PROFILE/packages.zsh
+. $PROFILE/zoxide.sh
+. $PROFILE/alias.zsh
+. $PROFILE/ps1.zsh
+. $PROFILE/zsh-vi-mode.zsh
+. $PROFILE/path.zsh
+
+# bun completions
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+
+# opencode
+export PATH=$HOME/.opencode/bin:$PATH
+
+# claude
+export PATH="$HOME/.bun/bin:$PATH"
+
+export EDITOR="nvim"
+
+alias claude="claude --dangerously-skip-permissions"
+alias claude-work='CLAUDE_CONFIG_DIR="$HOME/.claude-work" claude --dangerously-skip-permissions'
+
+export CLAUDE_CODE_NO_FLICKER=1
+
+# Added by Antigravity CLI installer
+export PATH="$HOME/.local/bin:$PATH"
+
+# kimi-code
+export PATH="$HOME/.kimi-code/bin:$PATH"
+
+# model aliases: <tool>-<model>-<effort>; list with: alias | grep -E '^(claude|codex|agy|grok)-'
+_efforts=(low medium high xhigh max)
+
+# claude
+typeset -A _claude_models=(
+  fable  fable-5
+  opus   opus-5
+  sonnet sonnet-5
+  haiku  haiku
+)
+for _slug _model in ${(kv)_claude_models}; do
+  for _effort in $_efforts; do
+    alias "claude-$_slug-$_effort"="claude --model $_model --effort $_effort"
+  done
+done
+
+# gpt
+typeset -A _codex_models=(
+  5.5 gpt-5.5
+  sol gpt-5.6-sol
+)
+for _slug _model in ${(kv)_codex_models}; do
+  for _effort in $_efforts; do
+    alias "codex-$_slug-$_effort"="codex -m $_model -c 'model_reasoning_effort=\"$_effort\"'"
+  done
+done
+
+# gemini: effort is part of the model name; valid combos are whatever `agy models` lists
+typeset -A _agy_models=(
+  flash   gemini-3.8-flash
+  flash35 gemini-3.5-flash
+  pro     gemini-3.1-pro
+)
+typeset -A _agy_efforts=(
+  flash   'low medium high'
+  flash35 'low medium high'
+  pro     'low high'
+)
+for _slug _base in ${(kv)_agy_models}; do
+  for _effort in ${=_agy_efforts[$_slug]}; do
+    alias "agy-$_slug-$_effort"="agy --model $_base-$_effort"
+  done
+done
+
+# grok
+typeset -A _grok_models=(
+  4   grok-4.6
+  4.6 grok-4.6
+  4.5 grok-4.5
+)
+for _slug _model in ${(kv)_grok_models}; do
+  for _effort in $_efforts; do
+    alias "grok-$_slug-$_effort"="grok --model $_model --reasoning-effort $_effort"
+  done
+done
+
+unset _efforts _claude_models _codex_models _agy_models _grok_models _agy_efforts _slug _model _base _effort
+
+# live bench
+alias agent-instruction-following='agy-pro-high'
+alias agent-language='claude-fable-max'
+alias agent-data-analysis='codex-5.5-xhigh'
+alias agent-mathematics='codex-sol-max'
+alias agent-agentic-coding='claude-opus-max'
+alias agent-coding='claude-fable-max'
+alias agent-reasoning='codex-sol-max'
+
+# grok completions
+if [ -d "$HOME/.grok/completions/zsh" ]; then
+  fpath=(~/.grok/completions/zsh $fpath)
+  autoload -Uz compinit && compinit -C
+fi
+
+# Execution notifications
+export ODVA_NOTIFY_CMD="$HOME/.local/bin/message-discord ai"
