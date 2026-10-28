@@ -1,0 +1,8 @@
+{{- $os := .chezmoi.os -}}
+{{- if not (or (eq $os "darwin") (eq $os "linux")) -}}
+{{-   fail (printf "unsupported OS %q: darwin and linux only" $os) -}}
+{{- end -}}
+
+[data]
+    os = {{ $os | quote }}
+    hostname = {{ .chezmoi.hostname | quote }}
