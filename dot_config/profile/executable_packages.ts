@@ -69,6 +69,13 @@ function loadConfig(): ProfileConfig {
   return Bun.TOML.parse(content) as ProfileConfig;
 }
 
+function installOrReport(command: string[]): void {
+  const result = runCommand(command);
+  if (!result.success) {
+    console.error(`Failed: ${command.join(" ")}\n${result.stderr.trim()}`);
+  }
+}
+
 function syncMise(): void {
   const miseBinary = getPlatform() === "windows" ? "mise" : runCommand(["which", "mise"], { ignoreErrors: true }).stdout.trim() || "mise";
   const result = runCommand([miseBinary, "install", "-y"]);
@@ -129,13 +136,13 @@ function syncMacOS(macosConfig?: ProfileConfig["macos"]): void {
   // Install missing formulas
   for (const formula of missingFormulas) {
     console.log(`Installing missing macOS formula: ${formula}`);
-    runCommand(["brew", "install", formula]);
+    installOrReport(["brew", "install", formula]);
   }
 
   // Install missing casks
   for (const cask of missingCasks) {
     console.log(`Installing missing macOS cask: ${cask}`);
-    runCommand(["brew", "install", "--cask", cask]);
+    installOrReport(["brew", "install", "--cask", cask]);
   }
 }
 

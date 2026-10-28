@@ -1,0 +1,26 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+# Fresh-Mac prerequisites: Command Line Tools, Homebrew, local tap, mise.
+set -euo pipefail
+
+if ! xcode-select -p >/dev/null 2>&1; then
+  echo "Installing Command Line Tools: accept the dialog on screen."
+  xcode-select --install || true
+  until xcode-select -p >/dev/null 2>&1; do sleep 10; done
+fi
+
+if [ ! -x /opt/homebrew/bin/brew ]; then
+  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Local tap: tart and softnet fixed for Homebrew 7 (cirruslabs tap declares depends_on :macos twice).
+tap_dir="$(brew --repository)/Library/Taps/jearle/homebrew-local/Formula"
+mkdir -p "$tap_dir"
+cp "{{ .chezmoi.sourceDir }}/homebrew/Formula/"*.rb "$tap_dir/"
+brew trust --tap jearle/local
+
+if ! command -v mise >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/mise" ]; then
+  curl -fsSL https://mise.run | sh
+fi
+{{ end -}}

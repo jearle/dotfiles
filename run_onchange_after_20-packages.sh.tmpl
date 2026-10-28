@@ -1,0 +1,12 @@
+#!/bin/bash
+# Reruns when packages.toml or mise config.toml changes.
+# packages.toml: {{ include "dot_config/mise/packages.toml" | sha256sum }}
+# config.toml: {{ include "dot_config/mise/config.toml" | sha256sum }}
+set -euo pipefail
+
+export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
+{{ if eq .chezmoi.os "darwin" -}}
+eval "$(/opt/homebrew/bin/brew shellenv)"
+{{ end -}}
+mise install -y
+mise exec -- bun "$HOME/.config/profile/packages.ts"
