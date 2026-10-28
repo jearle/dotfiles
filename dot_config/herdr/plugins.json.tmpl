@@ -1,0 +1,84 @@
+[
+  {
+    "plugin_id": "local.keymap",
+    "name": "Keymap",
+    "version": "0.2.0",
+    "min_herdr_version": "0.8.0",
+    "description": "Pin a cheat sheet on the last Agents sidebar row",
+    "manifest_path": "{{ .chezmoi.homeDir }}/.config/herdr/plugins/keymap/herdr-plugin.toml",
+    "plugin_root": "{{ .chezmoi.homeDir }}/.config/herdr/plugins/keymap",
+    "enabled": true,
+    "platforms": [
+      "macos",
+      "linux"
+    ],
+    "startup": [
+      {
+        "command": [
+          "bash",
+          "startup.sh"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "move-workspace-down",
+        "title": "Slide workspace down",
+        "command": [
+          "bash",
+          "move-workspace.sh",
+          "down"
+        ]
+      },
+      {
+        "id": "move-workspace-up",
+        "title": "Slide workspace up",
+        "command": [
+          "bash",
+          "move-workspace.sh",
+          "up"
+        ]
+      }
+    ],
+    "events": [
+      {
+        "on": "pane.closed",
+        "command": [
+          "bash",
+          "startup.sh"
+        ]
+      },
+      {
+        "on": "pane.created",
+        "command": [
+          "bash",
+          "startup.sh"
+        ]
+      },
+      {
+        "on": "pane.moved",
+        "command": [
+          "bash",
+          "startup.sh"
+        ]
+      },
+      {
+        "on": "workspace.closed",
+        "command": [
+          "bash",
+          "startup.sh"
+        ]
+      },
+      {
+        "on": "workspace.created",
+        "command": [
+          "bash",
+          "startup.sh"
+        ]
+      }
+    ],
+    "source": {
+      "kind": "local"
+    }
+  }
+]

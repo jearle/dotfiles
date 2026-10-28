@@ -1,0 +1,43 @@
+[tools]
+# Runtimes & Languages
+bun = "latest"
+deno = "latest"
+go = "latest"
+node = "lts"
+python = "latest"
+ruby = "latest"
+rust = "latest"
+zig = "latest"
+
+# CLI Tools & Utilities
+bat = "latest"
+chezmoi = "latest"
+cmake = "latest"
+fd = "latest"
+ffmpeg = "latest"
+fzf = "latest"
+gh = "latest"
+lsd = "latest"
+mas = "latest"
+neovim = "latest"
+ollama = "latest"
+pandoc = "latest"
+uv = "latest"
+ripgrep = "latest"
+tmux = "latest"
+usage = "latest"
+yt-dlp = "latest"
+zoxide = "latest"
+
+# AI Coding Agents & Multiplexers
+agy = "latest"
+claude-code = "latest"
+codex = "latest"
+grok = "latest"
+herdr = "latest"
+
+[settings]
+experimental = true
+legacy_version_file = true
+minimum_release_age = "0"
+upgrade.prune_after = "0s"

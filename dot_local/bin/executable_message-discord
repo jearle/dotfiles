@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -lt 2 ]]; then
+  echo 'Usage: message-discord CHANNEL "message"' >&2
+  exit 1
+fi
+
+channel="$1"
+shift
+message="$*"
+
+# Expand literal \n escape sequences to real newlines if present
+message="$(printf '%b' "$message")"
+
+case "$channel" in
+  ai) webhook="${DISCORD_WEBHOOK_AI:?Set DISCORD_WEBHOOK_AI first}" ;;
+  *) echo "Unknown channel: $channel" >&2; exit 1 ;;
+esac
+
+curl --fail --silent --show-error \
+  --output /dev/null \
+  --form-string "content=$message" \
+  "${webhook}?wait=true"
