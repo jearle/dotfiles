@@ -1,0 +1,14 @@
+{{- if eq .chezmoi.os "linux" -}}
+#!/bin/bash
+# Fresh-Linux prerequisites: build tools, zsh, mise.
+set -euo pipefail
+
+if command -v apt-get >/dev/null 2>&1; then
+  sudo apt-get update
+  sudo apt-get install -y build-essential curl git unzip zsh
+fi
+
+if ! command -v mise >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/mise" ]; then
+  curl -fsSL https://mise.run | sh
+fi
+{{ end -}}
