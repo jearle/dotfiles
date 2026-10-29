@@ -158,7 +158,19 @@ function syncLinux(linuxConfig?: ProfileConfig["linux"]): void {
   if (linuxConfig.packages && linuxConfig.packages.length > 0) {
     console.log(`Linux packages defined: ${linuxConfig.packages.join(", ")}`);
     if (hasApt) {
-      console.log("To install with apt-get, run: sudo apt-get update && sudo apt-get install -y " + linuxConfig.packages.join(" "));
+      const missing = linuxConfig.packages.filter(
+        (pkg) => !runCommand(["dpkg", "-s", pkg], { ignoreErrors: true }).success,
+      );
+      if (missing.length > 0) {
+        // sudo -n: never prompt (this also runs at shell start); report instead.
+        const updated = runCommand(["sudo", "-n", "apt-get", "update"], { ignoreErrors: true }).success;
+        if (updated) {
+          console.log(`Installing missing apt packages: ${missing.join(", ")}`);
+          installOrReport(["sudo", "-n", "env", "DEBIAN_FRONTEND=noninteractive", "apt-get", "install", "-y", ...missing]);
+        } else {
+          console.log("To install with apt-get, run: sudo apt-get update && sudo apt-get install -y " + missing.join(" "));
+        }
+      }
     } else if (hasDnf) {
       console.log("To install with dnf, run: sudo dnf install -y " + linuxConfig.packages.join(" "));
     } else if (hasPacman) {
