@@ -20,7 +20,6 @@ formulas = [
 
 casks = [
   "macfuse",
-  "bitwarden",
   "basictex",
   "visual-studio-code",
   "ghostty",
