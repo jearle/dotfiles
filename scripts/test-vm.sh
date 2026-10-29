@@ -42,8 +42,8 @@ vm() {
 
 until vm true 2>/dev/null; do sleep 5; done
 
-# Bootstrap: the README one-liner, pinned to a ref.
-vm "sh -c \"\$(curl -fsLS get.chezmoi.io)\" -- -b \$HOME/.local/bin init --apply --use-builtin-git true --branch '$ref' jearle"
+# Bootstrap: install.sh pinned to a ref; public pass only unless DOTFILES_SKIP_SECRETS=0.
+vm -tt "curl -fsLS https://raw.githubusercontent.com/jearle/dotfiles/$ref/install.sh -o /tmp/install.sh && DOTFILES_REF='$ref' DOTFILES_SKIP_SECRETS=${DOTFILES_SKIP_SECRETS:-1} sh /tmp/install.sh"
 
 # Checks.
 status=0
