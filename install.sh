@@ -16,7 +16,14 @@ if [ ! -x "$bin/chezmoi" ]; then
 fi
 
 step "2/3 public pass: tools, packages, config"
+# Apple's git needs the Command Line Tools; before they exist, re-clone with
+# chezmoi's built-in git instead of pulling (the clone holds no local edits).
+git_usable() { [ "$(uname -s)" != Darwin ] || xcode-select -p >/dev/null 2>&1; }
+
 source_dir="$("$bin/chezmoi" source-path 2>/dev/null || true)"
+if [ -n "$source_dir" ] && [ -d "$source_dir/.git" ] && ! git_usable; then
+  rm -rf "$source_dir"
+fi
 if [ -n "$source_dir" ] && [ -d "$source_dir/.git" ]; then
   "$bin/chezmoi" git -- pull --ff-only
   "$bin/chezmoi" apply
