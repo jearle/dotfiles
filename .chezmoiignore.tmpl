@@ -12,3 +12,8 @@ scripts/**
 Library/
 Library/**
 {{- end }}
+
+{{- if not (env "BW_SESSION") }}
+# Secrets pass only: rendered from locker when bw is unlocked.
+.ssh/config
+{{- end }}
