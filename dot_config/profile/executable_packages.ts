@@ -133,16 +133,17 @@ function syncMacOS(macosConfig?: ProfileConfig["macos"]): void {
     }
   }
 
-  // Install missing formulas
-  for (const formula of missingFormulas) {
-    console.log(`Installing missing macOS formula: ${formula}`);
-    installOrReport(["brew", "install", formula]);
-  }
-
+  // Casks first: some formulas need a cask (ntfs-3g-mac needs macfuse).
   // Install missing casks
   for (const cask of missingCasks) {
     console.log(`Installing missing macOS cask: ${cask}`);
     installOrReport(["brew", "install", "--cask", cask]);
+  }
+
+  // Install missing formulas
+  for (const formula of missingFormulas) {
+    console.log(`Installing missing macOS formula: ${formula}`);
+    installOrReport(["brew", "install", formula]);
   }
 }
 

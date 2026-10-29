@@ -10,3 +10,8 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 {{ end -}}
 mise install -y
 mise exec -- bun "$HOME/.config/profile/packages.ts"
+
+# Bitwarden CLI → self-hosted Vaultwarden. The server can only be set while logged out.
+if mise exec -- bw status 2>/dev/null | grep -q '"status":"unauthenticated"'; then
+  mise exec -- bw config server https://locker.jesseearle.com
+fi
