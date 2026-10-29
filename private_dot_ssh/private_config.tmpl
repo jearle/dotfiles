@@ -1,1 +1,10 @@
-{{ (bitwarden "item" "ssh-config").notes -}}
+{{- /* Locker note ssh-config-<hostname> when it exists, else ssh-config.
+       Exact-name match by id: bw matches names by substring. */ -}}
+{{- $hostNote := printf "ssh-config-%s" .chezmoi.hostname -}}
+{{- $hostId := "" -}}
+{{- $sharedId := "" -}}
+{{- range (output "bw" "list" "items" "--search" "ssh-config" | fromJson) -}}
+{{-   if eq .name $hostNote }}{{ $hostId = .id }}{{ end -}}
+{{-   if eq .name "ssh-config" }}{{ $sharedId = .id }}{{ end -}}
+{{- end -}}
+{{ (bitwarden "item" (or $hostId $sharedId)).notes -}}
