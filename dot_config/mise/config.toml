@@ -11,6 +11,7 @@ zig = "latest"
 
 # CLI Tools & Utilities
 bat = "latest"
+bitwarden = "latest"
 chezmoi = "latest"
 cmake = "latest"
 fd = "latest"
