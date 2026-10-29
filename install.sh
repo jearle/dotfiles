@@ -17,7 +17,8 @@ step() { printf '\n==> %s\n' "$1"; }
 
 # Live progress: 1 line per thing being installed, by name.
 progress() {
-  LC_ALL=C tr '\r' '\n' | LC_ALL=C sed 's/\x1b\[[0-9;]*[A-Za-z]//g' | awk '
+  # perl flushes every line; tr and sed would hold output in 4 KB blocks.
+  LC_ALL=C perl -pe 'BEGIN { $| = 1 } s/\r/\n/g; s/\e\[[0-9;]*[A-Za-z]//g' | awk '
     /^==> Downloading and installing Homebrew/ { print "  homebrew  installing Homebrew"; fflush(); next }
     /^==> Installation successful!/           { print "  homebrew  ✓ Homebrew"; fflush(); next }
     /^mise: installing mise/                  { print "  mise      installing mise"; fflush(); next }
