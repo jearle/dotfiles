@@ -3,7 +3,8 @@
 #   sh -c "$(curl -fsLS https://raw.githubusercontent.com/jearle/dotfiles/main/install.sh)"
 # DOTFILES_REF=<branch>    install from a branch instead of main
 # DOTFILES_SKIP_SECRETS=1  stop after the public pass
-# Output: step lines, prompts, and a summary; details go to the log file.
+# Output: step lines, live progress (each tool and package by name), prompts,
+# and a summary; the full output goes to the log file.
 set -eu
 
 bin="$HOME/.local/bin"
@@ -14,9 +15,32 @@ log="$log_dir/install-$(date +%Y%m%dT%H%M%S).log"
 
 step() { printf '\n==> %s\n' "$1"; }
 
-# Run quietly into the log; on failure show the log tail and stop.
+# Live progress: 1 line per thing being installed, by name.
+progress() {
+  LC_ALL=C tr '\r' '\n' | LC_ALL=C sed 's/\x1b\[[0-9;]*[A-Za-z]//g' | awk '
+    /^==> Downloading and installing Homebrew/ { print "  homebrew: installing"; fflush(); next }
+    /^==> Installation successful!/           { print "  homebrew: installed"; fflush(); next }
+    /^mise: installing mise/                  { print "  mise: installing"; fflush(); next }
+    /^mise by @jdx .* installing [0-9]+ tools/ { print "  mise: installing " $(NF-1) " tools"; fflush(); next }
+    /^mise ✓ /                                { print "  ✓ " $3; fflush(); next }
+    /^Installing Command Line Tools/          { print "  " $0; fflush(); next }
+    /^Cloning into /                          { n = $3; gsub(/[\047.]+$|^\047/, "", n); sub(/.*\//, "", n); print "  clone: " n; fflush(); next }
+    /^Installing missing macOS formula: /     { print "  brew: " $NF; fflush(); next }
+    /^Installing missing macOS cask: /        { print "  cask: " $NF; fflush(); next }
+    /^Installing missing apt packages: /      { sub(/^[^:]*: /, ""); print "  apt: " $0; fflush(); next }
+    /^Failed: /                               { sub(/^Failed: /, ""); print "  ✗ failed: " $0; fflush(); next }
+    /^(ssh keys|wireguard):/                  { print "  " $0; fflush(); next }
+    /^Saved setting `config`/                 { print "  bw: server set to locker"; fflush(); next }
+  '
+}
+
+# Run into the log while streaming progress; on failure show the log tail and stop.
 quiet() {
-  if ! "$@" >>"$log" 2>&1 </dev/tty; then
+  status_file="$(mktemp)"
+  { "$@" </dev/tty 2>&1; echo "$?" >"$status_file"; } | tee -a "$log" | progress
+  status="$(cat "$status_file")"
+  rm -f "$status_file"
+  if [ "$status" != 0 ]; then
     printf '✗ failed: %s\n  last lines of %s:\n' "$*" "$log"
     tail -n 20 "$log" | sed 's/^/  /'
     exit 1
@@ -29,7 +53,8 @@ if [ ! -x "$bin/chezmoi" ]; then
 fi
 echo "ok"
 
-step "2/4 public pass: tools, packages, config (first run ~20 min; sudo may ask for your password)"
+step "2/4 public pass: tools, packages, config (first run ~15 min; sudo may ask for your password)"
+echo "  log: $log"
 source_dir="$("$bin/chezmoi" source-path 2>/dev/null || true)"
 if [ -n "$source_dir" ] && [ -d "$source_dir/.git" ]; then
   quiet "$bin/chezmoi" git -- pull --ff-only --quiet
@@ -66,7 +91,6 @@ echo "ok"
 step "4/4 secrets pass: ssh config, ssh keys, shell secrets, WireGuard"
 quiet "$bin/chezmoi" apply
 quiet mise exec -- bw lock
-grep -E '^(ssh keys|wireguard):' "$log" | sed 's/^/  /' || true
 echo "ok"
 
 grep -E '^Failed:' "$log" | sed 's/^/  ✗ /' || true
