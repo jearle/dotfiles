@@ -12,11 +12,18 @@ export PATH="$bin:$HOME/.local/share/mise/shims:$PATH"
 if [ ! -x "$bin/chezmoi" ]; then
   sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$bin"
 fi
-set -- init --apply --use-builtin-git true
-if [ -n "${DOTFILES_REF:-}" ]; then
-  set -- "$@" --branch "$DOTFILES_REF"
+source_dir="$("$bin/chezmoi" source-path 2>/dev/null || true)"
+if [ -n "$source_dir" ] && [ -d "$source_dir/.git" ]; then
+  # Rerun: bring the existing source up to date, then apply.
+  "$bin/chezmoi" git -- pull --ff-only
+  "$bin/chezmoi" apply </dev/tty
+else
+  set -- init --apply --use-builtin-git true
+  if [ -n "${DOTFILES_REF:-}" ]; then
+    set -- "$@" --branch "$DOTFILES_REF"
+  fi
+  "$bin/chezmoi" "$@" jearle </dev/tty
 fi
-"$bin/chezmoi" "$@" jearle </dev/tty
 
 if [ "${DOTFILES_SKIP_SECRETS:-}" = 1 ]; then
   echo "Public pass done; secrets skipped (DOTFILES_SKIP_SECRETS=1)."
