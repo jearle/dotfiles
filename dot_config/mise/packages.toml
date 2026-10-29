@@ -15,7 +15,8 @@ formulas = [
   "gromgit/fuse/ntfs-3g-mac",
   "slackdump",
   "jearle/local/tart",
-  "podman"
+  "podman",
+  "wireguard-tools"
 ]
 
 casks = [
@@ -49,6 +50,7 @@ packages = [
   "libpng-dev",
   "btop",
   "podman",
+  "wireguard-tools",
   "caffeine"
 ]
 
