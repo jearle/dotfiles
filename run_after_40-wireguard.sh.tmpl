@@ -23,7 +23,7 @@ dir=/etc/wireguard
 wg_quick=(sudo wg-quick)
 {{- end }}
 
-config="$(bw get item "$note" 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("notes") or "", end="")' || true)"
+config="$(bw get item "$note" 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("notes") or "", end="")' 2>/dev/null || true)"
 if [ -z "$config" ]; then
   echo "wireguard: no locker note $note; skipping"
   exit 0

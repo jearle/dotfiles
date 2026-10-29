@@ -4,22 +4,20 @@ chezmoi source for `~/.config` and home dotfiles. macOS and Linux.
 
 ## Bootstrap
 
+New machine, at home (locker on the LAN):
+
 ```sh
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply jearle
+sh -c "$(curl -fsLS https://raw.githubusercontent.com/jearle/dotfiles/main/install.sh)"
 ```
 
-Secrets pass (needs WireGuard to `locker.jesseearle.com` and a `bw` login):
+1. Public pass: Command Line Tools, Homebrew, packages, config, tools.
+2. `bw` login to `locker.jesseearle.com` (master password, typed).
+3. Secrets pass: `~/.ssh/config`, ssh keys, `secrets.zsh`, WireGuard.
+
+Existing machine, secrets refresh:
 
 ```sh
 BW_SESSION=$(bw unlock --raw) chezmoi apply
-```
-
-Writes the files rendered from locker; the public pass skips them.
-
-Existing machine:
-
-```sh
-chezmoi init --apply jearle
 ```
 
 ## Layout
