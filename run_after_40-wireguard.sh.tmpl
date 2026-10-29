@@ -1,12 +1,14 @@
 {{- if env "BW_SESSION" -}}
 #!/bin/bash
-# Secrets pass: personal WireGuard tunnel from locker note wireguard-<hostname>.
-# The config comes from bw at run time; none is rendered into this script.
+# Secrets pass: WireGuard tunnels from locker, per machine.
+#   wg0  <- note wireguard-<hostname>       (personal VPN)
+#   odva <- note odva-wireguard-<hostname>  (odva network)
+# Configs come from bw at run time; none is rendered into this script.
 # WIREGUARD_DRY_RUN=1 prints the privileged steps instead of running them.
 set -euo pipefail
 
 export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
-note={{ printf "wireguard-%s" .chezmoi.hostname | quote }}
+host={{ .chezmoi.hostname | quote }}
 run() { if [ "${WIREGUARD_DRY_RUN:-}" = 1 ]; then echo "dry-run: $*"; else "$@"; fi; }
 
 {{ if eq .chezmoi.os "darwin" -}}
@@ -14,36 +16,61 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 dir="$HOMEBREW_PREFIX/etc/wireguard"
 # wg-quick needs bash >= 4; sudo resets PATH to /bin/bash 3.2.
 wg_quick=(sudo "$HOMEBREW_PREFIX/bin/bash" "$HOMEBREW_PREFIX/bin/wg-quick")
-if [ -d /Applications/WireGuard.app ]; then
-  echo "wireguard: WireGuard.app manages the tunnel here; skipping"
-  exit 0
-fi
+has_address() { ifconfig | grep -q "inet ${1%/*} "; }
+# The WireGuard app owns tunnels where it is installed; never start a 2nd.
+app_managed() { [ -d /Applications/WireGuard.app ]; }
 {{- else -}}
 dir=/etc/wireguard
 wg_quick=(sudo wg-quick)
+has_address() { ip -4 addr | grep -q "inet ${1%/*}/"; }
+app_managed() { false; }
 {{- end }}
 
-config="$(bw get item "$note" 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("notes") or "", end="")' 2>/dev/null || true)"
-if [ -z "$config" ]; then
-  echo "wireguard: no locker note $note; skipping"
-  exit 0
-fi
+# Exact name match: bw get item matches by substring
+# (wireguard-<host> is inside odva-wireguard-<host>).
+note_text() {
+  bw list items --search "$1" 2>/dev/null \
+    | python3 -c '
+import json, sys
+name = sys.argv[1]
+item = next((i for i in json.load(sys.stdin) if i["name"] == name), {})
+print(item.get("notes") or "", end="")' "$1" 2>/dev/null \
+    || true
+}
 
-tmp="$(mktemp)"
-trap 'rm -f "$tmp"' EXIT
-chmod 600 "$tmp"
-printf '%s\n' "$config" > "$tmp"
+tunnel() {
+  local iface="$1" note="$2" config address tmp
+  config="$(note_text "$note")"
+  if [ -z "$config" ]; then
+    echo "wireguard: $iface: no locker note $note; skipping"
+    return 0
+  fi
 
-if ! sudo -n cmp -s "$tmp" "$dir/wg0.conf" 2>/dev/null; then
-  run sudo install -d -m 700 "$dir"
-  run sudo install -m 600 "$tmp" "$dir/wg0.conf"
-  echo "wireguard: wrote $dir/wg0.conf"
-fi
+  tmp="$(mktemp)"
+  chmod 600 "$tmp"
+  printf '%s\n' "$config" > "$tmp"
+  if ! sudo -n cmp -s "$tmp" "$dir/$iface.conf" 2>/dev/null; then
+    run sudo install -d -m 700 "$dir"
+    run sudo install -m 600 "$tmp" "$dir/$iface.conf"
+    echo "wireguard: $iface: wrote $dir/$iface.conf"
+  fi
+  rm -f "$tmp"
 
-if [ -z "$(sudo -n wg show interfaces 2>/dev/null || true)" ]; then
-  run "${wg_quick[@]}" up wg0
-fi
-{{ if eq .chezmoi.os "linux" -}}
-run sudo systemctl enable wg-quick@wg0
-{{ end -}}
+  # Up only when no interface has this address yet (app or another name).
+  address="$(printf '%s\n' "$config" | sed -n 's/^Address *= *\([^,]*\).*/\1/p' | head -n 1)"
+  if [ -n "$address" ] && has_address "$address"; then
+    echo "wireguard: $iface: ${address%/*} already up; left running"
+  elif app_managed; then
+    echo "wireguard: $iface: WireGuard.app installed; connect it there"
+  else
+    run "${wg_quick[@]}" up "$iface"
+    echo "wireguard: $iface: up"
+  fi
+{{- if eq .chezmoi.os "linux" }}
+  run sudo systemctl enable "wg-quick@$iface"
+{{- end }}
+}
+
+tunnel wg0 "wireguard-$host"
+tunnel odva "odva-wireguard-$host"
 {{ end -}}
