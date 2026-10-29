@@ -30,6 +30,8 @@ cleanup() {
 trap cleanup EXIT
 
 tart clone "$image" "$name"
+# The 50 GB image disk fills up with the full package list.
+tart set "$name" --disk-size 100
 tart run "$name" >/dev/null 2>&1 &
 ip="$(tart ip --wait 300 "$name")"
 echo "VM $name at $ip"

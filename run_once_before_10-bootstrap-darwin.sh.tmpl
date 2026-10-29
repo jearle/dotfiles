@@ -15,8 +15,7 @@ if ! xcode-select -p >/dev/null 2>&1; then
 fi
 
 if ! xcode-select -p >/dev/null 2>&1; then
-  msg="Installing Command Line Tools: accept the dialog on screen."
-  { echo "$msg" >/dev/tty; } 2>/dev/null || echo "$msg"
+  echo "Installing Command Line Tools: accept the dialog on screen."
   xcode-select --install || true
   until xcode-select -p >/dev/null 2>&1; do sleep 10; done
 fi

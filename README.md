@@ -10,7 +10,7 @@ New machine, at home (locker on the LAN):
 sh -c "$(curl -fsLS https://raw.githubusercontent.com/jearle/dotfiles/main/install.sh)"
 ```
 
-1. Public pass: Command Line Tools, Homebrew, packages, config, tools.
+1. Public pass: Command Line Tools, Homebrew, packages, config, tools (native brew/mise output).
 2. `bw` login to `locker.jesseearle.com` (master password, typed).
 3. Secrets pass: `~/.ssh/config`, ssh keys, `secrets.zsh`, WireGuard.
 
