@@ -18,19 +18,19 @@ step() { printf '\n==> %s\n' "$1"; }
 # Live progress: 1 line per thing being installed, by name.
 progress() {
   LC_ALL=C tr '\r' '\n' | LC_ALL=C sed 's/\x1b\[[0-9;]*[A-Za-z]//g' | awk '
-    /^==> Downloading and installing Homebrew/ { print "  homebrew: installing"; fflush(); next }
-    /^==> Installation successful!/           { print "  homebrew: installed"; fflush(); next }
-    /^mise: installing mise/                  { print "  mise: installing"; fflush(); next }
-    /^mise by @jdx .* installing [0-9]+ tools/ { print "  mise: installing " $(NF-1) " tools"; fflush(); next }
-    /^mise ✓ /                                { print "  ✓ " $3; fflush(); next }
-    /^Installing Command Line Tools/          { print "  " $0; fflush(); next }
-    /^Cloning into /                          { n = $3; gsub(/[\047.]+$|^\047/, "", n); sub(/.*\//, "", n); print "  clone: " n; fflush(); next }
-    /^Installing missing macOS formula: /     { print "  brew: " $NF; fflush(); next }
-    /^Installing missing macOS cask: /        { print "  cask: " $NF; fflush(); next }
-    /^Installing missing apt packages: /      { sub(/^[^:]*: /, ""); print "  apt: " $0; fflush(); next }
+    /^==> Downloading and installing Homebrew/ { print "  homebrew  installing Homebrew"; fflush(); next }
+    /^==> Installation successful!/           { print "  homebrew  ✓ Homebrew"; fflush(); next }
+    /^mise: installing mise/                  { print "  mise      installing mise"; fflush(); next }
+    /^mise by @jdx .* installing [0-9]+ tools/ { print "  mise      installing " $(NF-1) " tools"; fflush(); next }
+    /^mise ✓ /                                { print "  mise      ✓ " $3; fflush(); next }
+    /^Installing Command Line Tools/          { print "  apple     " $0; fflush(); next }
+    /^Cloning into /                          { n = $3; gsub(/[\047.]+$|^\047/, "", n); sub(/.*\//, "", n); print "  git       clone " n; fflush(); next }
+    /^Installing missing macOS formula: /     { print "  homebrew  " $NF; fflush(); next }
+    /^Installing missing macOS cask: /        { print "  homebrew  " $NF " (app)"; fflush(); next }
+    /^Installing missing apt packages: /      { sub(/^[^:]*: /, ""); print "  apt       " $0; fflush(); next }
     /^Failed: /                               { sub(/^Failed: /, ""); print "  ✗ failed: " $0; fflush(); next }
     /^(ssh keys|wireguard):/                  { print "  " $0; fflush(); next }
-    /^Saved setting `config`/                 { print "  bw: server set to locker"; fflush(); next }
+    /^Saved setting `config`/                 { print "  bw        server set to locker"; fflush(); next }
   '
 }
 
