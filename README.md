@@ -8,6 +8,14 @@ chezmoi source for `~/.config` and home dotfiles. macOS and Linux.
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply jearle
 ```
 
+Secrets pass (needs WireGuard to `locker.jesseearle.com` and a `bw` login):
+
+```sh
+BW_SESSION=$(bw unlock --raw) chezmoi apply
+```
+
+Writes the files rendered from locker; the public pass skips them.
+
 Existing machine:
 
 ```sh

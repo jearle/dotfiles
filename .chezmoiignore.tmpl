@@ -16,4 +16,5 @@ Library/**
 {{- if not (env "BW_SESSION") }}
 # Secrets pass only: rendered from locker when bw is unlocked.
 .ssh/config
+.config/env/secrets.zsh
 {{- end }}
