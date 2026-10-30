@@ -10,6 +10,23 @@ export PATH="$bin:$HOME/.local/share/mise/shims:$PATH"
 
 step() { printf '\n==> %s\n\n' "$1"; }
 
+# Copy every existing file chezmoi would change, before it changes it.
+backup_dir="$HOME/.local/state/dotfiles/backup-$(date +%Y%m%dT%H%M%S)"
+backup() {
+  "$bin/chezmoi" status | cut -c4- | while IFS= read -r path; do
+    target="$HOME/$path"
+    if [ -f "$target" ] || [ -L "$target" ]; then
+      mkdir -p "$backup_dir/$(dirname "$path")"
+      cp -P -p "$target" "$backup_dir/$path"
+      echo "backed up ~/$path"
+    fi
+  done
+}
+
+# sudo once: ask now, keep the timestamp fresh until this script exits.
+sudo -v
+( while kill -0 "$$" 2>/dev/null; do sudo -n true; sleep 60; done ) 2>/dev/null &
+
 step "1/3 chezmoi"
 if [ ! -x "$bin/chezmoi" ]; then
   sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$bin"
@@ -26,16 +43,18 @@ if [ -n "$source_dir" ] && [ -d "$source_dir/.git" ] && ! git_usable; then
 fi
 if [ -n "$source_dir" ] && [ -d "$source_dir/.git" ]; then
   "$bin/chezmoi" git -- pull --ff-only
-  "$bin/chezmoi" apply
 else
-  set -- init --apply --use-builtin-git true
+  set -- init --use-builtin-git true
   if [ -n "${DOTFILES_REF:-}" ]; then
     set -- "$@" --branch "$DOTFILES_REF"
   fi
   "$bin/chezmoi" "$@" jearle
 fi
+backup
+"$bin/chezmoi" apply
 
 if [ "${DOTFILES_SKIP_SECRETS:-}" = 1 ]; then
+  [ -d "$backup_dir" ] && printf '\nReplaced files backed up to %s\n' "$backup_dir"
   printf '\nDone (secrets skipped).\n'
   exit 0
 fi
@@ -52,7 +71,11 @@ else
   BW_SESSION="$(mise exec -- bw unlock --raw)"
 fi
 export BW_SESSION
+backup
 "$bin/chezmoi" apply
 mise exec -- bw lock
 
+if [ -d "$backup_dir" ]; then
+  printf '\nReplaced files backed up to %s\n' "$backup_dir"
+fi
 printf '\nDone. Open a new shell.\n'
