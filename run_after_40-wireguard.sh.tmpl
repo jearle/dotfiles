@@ -16,14 +16,49 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 dir="$HOMEBREW_PREFIX/etc/wireguard"
 # wg-quick needs bash >= 4; sudo resets PATH to /bin/bash 3.2.
 wg_quick=(sudo "$HOMEBREW_PREFIX/bin/bash" "$HOMEBREW_PREFIX/bin/wg-quick")
-has_address() { ifconfig | grep -q "inet ${1%/*} "; }
-# The WireGuard app owns tunnels where it is installed; never start a 2nd.
-app_managed() { [ -d /Applications/WireGuard.app ]; }
+has_address() { ifconfig | grep "inet ${1%/*} " >/dev/null; }
+# Any tunnel imported in WireGuard.app: the app runs this machine's tunnels
+# (names there may differ, e.g. cold-forge's "jesse-laptop").
+app_managed() { scutil --nc list 2>/dev/null | grep 'com\.wireguard\.macos' >/dev/null; }
+# Boot start for wg-quick tunnels, unless a daemon already runs this one.
+boot_daemon() {
+  local iface="$1" label="com.jesseearle.wireguard.$1"
+  local plist="/Library/LaunchDaemons/$label.plist" tmp
+  if grep -l -s "wg-quick up $iface" /Library/LaunchDaemons/*.plist | grep -v "^$plist$" >/dev/null; then
+    echo "wireguard: $iface: boot daemon exists already"
+    return 0
+  fi
+  tmp="$(mktemp)"
+  cat > "$tmp" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>$label</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string><string>-c</string>
+    <string>$HOMEBREW_PREFIX/bin/wg show $iface &gt;/dev/null 2&gt;&amp;1 || exec $HOMEBREW_PREFIX/bin/bash $HOMEBREW_PREFIX/bin/wg-quick up $iface</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict><key>PATH</key><string>$HOMEBREW_PREFIX/bin:/usr/bin:/bin:/usr/sbin:/sbin</string></dict>
+  <key>RunAtLoad</key><true/>
+  <key>StandardErrorPath</key><string>/var/log/$label.log</string>
+</dict>
+</plist>
+PLIST
+  if ! sudo -n cmp -s "$tmp" "$plist" 2>/dev/null; then
+    run sudo install -m 644 -o root -g wheel "$tmp" "$plist"
+    echo "wireguard: $iface: boot daemon installed"
+  fi
+  rm -f "$tmp"
+}
 {{- else -}}
 dir=/etc/wireguard
 wg_quick=(sudo wg-quick)
-has_address() { ip -4 addr | grep -q "inet ${1%/*}/"; }
+has_address() { ip -4 addr | grep "inet ${1%/*}/" >/dev/null; }
 app_managed() { false; }
+boot_daemon() { run sudo systemctl enable "wg-quick@$1"; }
 {{- end }}
 
 # Exact name match: bw get item matches by substring.
@@ -57,17 +92,17 @@ tunnel() {
 
   # Up only when no interface has this address yet (app or another name).
   address="$(printf '%s\n' "$config" | sed -n 's/^Address *= *\([^,]*\).*/\1/p' | head -n 1)"
+  if app_managed "$iface"; then
+    echo "wireguard: $iface: WireGuard.app runs this machine's tunnels; config written only"
+    return 0
+  fi
   if [ -n "$address" ] && has_address "$address"; then
     echo "wireguard: $iface: ${address%/*} already up; left running"
-  elif app_managed; then
-    echo "wireguard: $iface: WireGuard.app installed; connect it there"
   else
     run "${wg_quick[@]}" up "$iface"
     echo "wireguard: $iface: up"
   fi
-{{- if eq .chezmoi.os "linux" }}
-  run sudo systemctl enable "wg-quick@$iface"
-{{- end }}
+  boot_daemon "$iface"
 }
 
 tunnel jesseearle "wireguard-jesseearle-$host"
