@@ -71,6 +71,8 @@ else
   BW_SESSION="$(mise exec -- bw unlock --raw)"
 fi
 export BW_SESSION
+# The local vault copy may predate renames or new items.
+mise exec -- bw sync >/dev/null
 backup
 "$bin/chezmoi" apply
 mise exec -- bw lock
