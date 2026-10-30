@@ -28,3 +28,15 @@ BW_SESSION=$(bw unlock --raw) chezmoi apply
 - `archive/`: pre-chezmoi `.config/`, `powershell/`, `zsh/`; not applied.
 
 Plan and decisions: slice `dotfiles` (`~/repos/vault/01-inbox/dotfiles/`).
+
+## Locker items
+
+`<kind>-<name>-<host>`; shared items drop `-<host>`. Machines use `<name>` only.
+
+| Item | On the machine |
+| --- | --- |
+| `wireguard-jesseearle-<host>` | tunnel `jesseearle` |
+| `wireguard-odva-<host>` | tunnel `odva` |
+| `ssh-key-<name>-<host>` | `~/.ssh/<name>` |
+| `ssh-config-<host>`, else `ssh-config` | `~/.ssh/config` |
+| `shell-secrets` | `~/.config/env/secrets.zsh` |
