@@ -21,6 +21,7 @@ has_address() { ifconfig | grep "inet ${1%/*} " >/dev/null; }
 # (names there may differ, e.g. cold-forge's "jesse-laptop").
 app_managed() { scutil --nc list 2>/dev/null | grep 'com\.wireguard\.macos' >/dev/null; }
 # Boot start for wg-quick tunnels, unless a daemon already runs this one.
+# wg knows macOS tunnels only as utunN; wg-quick maps names in <name>.name.
 boot_daemon() {
   local iface="$1" label="com.jesseearle.wireguard.$1"
   local plist="/Library/LaunchDaemons/$label.plist" tmp
@@ -38,11 +39,14 @@ boot_daemon() {
   <key>ProgramArguments</key>
   <array>
     <string>/bin/sh</string><string>-c</string>
-    <string>$HOMEBREW_PREFIX/bin/wg show $iface &gt;/dev/null 2&gt;&amp;1 || exec $HOMEBREW_PREFIX/bin/bash $HOMEBREW_PREFIX/bin/wg-quick up $iface</string>
+    <string>$HOMEBREW_PREFIX/bin/wg show "\$(cat /var/run/wireguard/$iface.name 2&gt;/dev/null)" &gt;/dev/null 2&gt;&amp;1 || exec $HOMEBREW_PREFIX/bin/bash $HOMEBREW_PREFIX/bin/wg-quick up $iface</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict><key>PATH</key><string>$HOMEBREW_PREFIX/bin:/usr/bin:/bin:/usr/sbin:/sbin</string></dict>
   <key>RunAtLoad</key><true/>
+  <!-- At boot DNS may not resolve the endpoint yet: retry until up. -->
+  <key>KeepAlive</key><dict><key>SuccessfulExit</key><false/></dict>
+  <key>ThrottleInterval</key><integer>30</integer>
   <key>StandardErrorPath</key><string>/var/log/$label.log</string>
 </dict>
 </plist>
