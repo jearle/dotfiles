@@ -9,7 +9,6 @@ PROFILE=$CONFIG/profile
 . $PROFILE/alias.zsh
 . $PROFILE/ps1.zsh
 . $PROFILE/zsh-vi-mode.zsh
-. $PROFILE/vpn.zsh
 . $PROFILE/path.zsh
 
 # bun completions

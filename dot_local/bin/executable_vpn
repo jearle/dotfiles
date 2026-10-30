@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+"""WireGuard tunnels by name (wg-quick).
+
+  vpn status [name...]   tunnels: interface, endpoint, handshake age
+  vpn up     [name...]   start (default: every configured tunnel)
+  vpn down   [name...]   stop (default: every running tunnel)
+  vpn reset  [name...]   down, then up (default: every running tunnel)
+"""
+
+import glob
+import os
+import subprocess
+import sys
+import time
+
+MACOS = sys.platform == "darwin"
+CONFIG_DIR = "/opt/homebrew/etc/wireguard" if MACOS else "/etc/wireguard"
+NAME_DIR = "/var/run/wireguard"
+
+
+def sudo(*args, capture=False):
+    result = subprocess.run(["sudo", *args], capture_output=capture, text=True)
+    return result.stdout if capture else result.returncode
+
+
+def wg_quick(action, name):
+    # sudo drops Homebrew from PATH, and wg-quick needs bash >= 4 (macOS has 3.2).
+    if MACOS:
+        return sudo("/opt/homebrew/bin/bash", "/opt/homebrew/bin/wg-quick", action, name)
+    return sudo("wg-quick", action, name)
+
+
+def wg(*args):
+    return sudo("/opt/homebrew/bin/wg" if MACOS else "wg", *args, capture=True)
+
+
+def running():
+    """{name: interface} of running tunnels."""
+    if MACOS:
+        names = sudo("sh", "-c", f"for f in {NAME_DIR}/*.name; do [ -f \"$f\" ] && echo \"$f $(cat \"$f\")\"; done",
+                     capture=True)
+        return {os.path.basename(path)[: -len(".name")]: iface
+                for path, iface in (line.split() for line in names.splitlines())}
+    return {name: name for name in wg("show", "interfaces").split()}
+
+
+def configured():
+    listing = sudo("sh", "-c", f"ls {CONFIG_DIR}/*.conf 2>/dev/null", capture=True)
+    return [os.path.basename(path)[: -len(".conf")] for path in listing.split()]
+
+
+def status(names):
+    tunnels = running()
+    for name in names or sorted(tunnels):
+        iface = tunnels.get(name)
+        if not iface:
+            print(f"{name}: down")
+            continue
+        endpoint = (wg("show", iface, "endpoints").split() or ["", "?"])[1]
+        stamp = int((wg("show", iface, "latest-handshakes").split() or ["", "0"])[1])
+        handshake = f"{int(time.time()) - stamp} s ago" if stamp else "never"
+        print(f"{name} ({iface}): endpoint {endpoint}, handshake {handshake}")
+    if not names and not tunnels:
+        print("no tunnels running")
+
+
+def up(names):
+    tunnels = running()
+    failed = 0
+    for name in names or configured():
+        if name in tunnels:
+            print(f"{name}: already up")
+            continue
+        failed |= wg_quick("up", name)
+    return failed
+
+
+def down(names):
+    failed = 0
+    for name in names or sorted(running()):
+        failed |= wg_quick("down", name)
+    return failed
+
+
+def reset(names):
+    names = names or sorted(running())
+    return down(names) | up(names)
+
+
+def main(argv):
+    commands = {"status": status, "up": up, "down": down, "reset": reset}
+    if not argv or argv[0] not in commands:
+        print(__doc__.strip())
+        return 0 if argv[:1] in ([], ["-h"], ["--help"]) else 2
+    return commands[argv[0]](argv[1:]) or 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
