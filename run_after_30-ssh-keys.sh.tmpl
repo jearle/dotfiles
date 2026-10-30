@@ -1,20 +1,21 @@
 {{- if env "BW_SESSION" -}}
 #!/bin/bash
-# Secrets pass: write ~/.ssh/<name> from locker SSH key items ssh-<hostname>-<name>.
+# Secrets pass: write ~/.ssh/<name> from locker SSH key items ssh-key-<name>-<hostname>.
 # Keys come from bw at run time; none are rendered into this script.
 set -euo pipefail
 
 export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
 dir={{ printf "%s/.ssh" .chezmoi.destDir | quote }}
-prefix={{ printf "ssh-%s-" .chezmoi.hostname | quote }}
+suffix={{ printf "-%s" .chezmoi.hostname | quote }}
 
 mkdir -p "$dir"
 chmod 700 "$dir"
 
-bw list items --search "$prefix" | python3 -c '
+bw list items --search ssh-key- | python3 -c '
 import json, os, sys
 
-directory, prefix = sys.argv[1], sys.argv[2]
+directory, suffix = sys.argv[1], sys.argv[2]
+prefix = "ssh-key-"
 
 def write(path, content, mode):
     if os.path.exists(path) and open(path).read() == content:
@@ -30,13 +31,16 @@ def write(path, content, mode):
 written = 0
 for item in json.load(sys.stdin):
     key = item.get("sshKey") or {}
-    if item.get("type") != 5 or not item["name"].startswith(prefix) or not key.get("privateKey"):
+    full = item["name"]
+    if item.get("type") != 5 or not key.get("privateKey"):
         continue
-    name = item["name"][len(prefix):]
+    if not (full.startswith(prefix) and full.endswith(suffix)) or len(full) <= len(prefix) + len(suffix):
+        continue
+    name = full[len(prefix):-len(suffix)]
     path = os.path.join(directory, name)
     written += write(path, key["privateKey"].rstrip("\n") + "\n", 0o600)
     if key.get("publicKey"):
         write(path + ".pub", key["publicKey"].rstrip("\n") + "\n", 0o644)
 print(f"ssh keys: {written} written")
-' "$dir" "$prefix"
+' "$dir" "$suffix"
 {{ end -}}

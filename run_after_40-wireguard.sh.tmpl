@@ -1,8 +1,8 @@
 {{- if env "BW_SESSION" -}}
 #!/bin/bash
 # Secrets pass: WireGuard tunnels from locker, per machine.
-#   wg0  <- note wireguard-<hostname>       (personal VPN)
-#   odva <- note odva-wireguard-<hostname>  (odva network)
+#   jesseearle <- note wireguard-jesseearle-<hostname>  (personal VPN)
+#   odva       <- note wireguard-odva-<hostname>        (odva network)
 # Configs come from bw at run time; none is rendered into this script.
 # WIREGUARD_DRY_RUN=1 prints the privileged steps instead of running them.
 set -euo pipefail
@@ -26,8 +26,7 @@ has_address() { ip -4 addr | grep -q "inet ${1%/*}/"; }
 app_managed() { false; }
 {{- end }}
 
-# Exact name match: bw get item matches by substring
-# (wireguard-<host> is inside odva-wireguard-<host>).
+# Exact name match: bw get item matches by substring.
 note_text() {
   bw list items --search "$1" 2>/dev/null \
     | python3 -c '
@@ -71,6 +70,6 @@ tunnel() {
 {{- end }}
 }
 
-tunnel wg0 "wireguard-$host"
-tunnel odva "odva-wireguard-$host"
+tunnel jesseearle "wireguard-jesseearle-$host"
+tunnel odva "wireguard-odva-$host"
 {{ end -}}
