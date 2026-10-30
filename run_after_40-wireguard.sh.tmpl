@@ -122,4 +122,41 @@ tunnel() {
 
 tunnel jesseearle "wireguard-jesseearle-$host"
 tunnel odva "wireguard-odva-$host"
+{{- if eq .chezmoi.os "darwin" }}
+
+# After a network change, keep each tunnel's off-link ranges routed through it
+# (home LAN via the tunnel away from home, direct at home).
+if ! app_managed; then
+  fixer="$dir/wg-routes.py"
+  if ! sudo -n cmp -s {{ printf "%s/libexec/wg-routes.py" .chezmoi.sourceDir | quote }} "$fixer" 2>/dev/null; then
+    run sudo install -m 755 -o root -g wheel {{ printf "%s/libexec/wg-routes.py" .chezmoi.sourceDir | quote }} "$fixer"
+  fi
+  label=com.jesseearle.wireguard.routes
+  plist="/Library/LaunchDaemons/$label.plist"
+  tmp="$(mktemp)"
+  cat > "$tmp" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>$label</string>
+  <key>ProgramArguments</key>
+  <array><string>/usr/bin/python3</string><string>$fixer</string></array>
+  <key>WatchPaths</key>
+  <array><string>/Library/Preferences/SystemConfiguration</string><string>/etc/resolv.conf</string></array>
+  <key>StartInterval</key><integer>60</integer>
+  <key>StandardOutPath</key><string>/var/log/$label.log</string>
+  <key>StandardErrorPath</key><string>/var/log/$label.log</string>
+</dict>
+</plist>
+PLIST
+  if ! sudo -n cmp -s "$tmp" "$plist" 2>/dev/null; then
+    run sudo install -m 644 -o root -g wheel "$tmp" "$plist"
+    run sudo launchctl bootout system "$plist" 2>/dev/null || true
+    run sudo launchctl bootstrap system "$plist"
+    echo "wireguard: route hook installed"
+  fi
+  rm -f "$tmp"
+fi
+{{- end }}
 {{ end -}}
