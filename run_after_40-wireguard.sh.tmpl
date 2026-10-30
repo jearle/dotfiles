@@ -14,6 +14,7 @@ run() { if [ "${WIREGUARD_DRY_RUN:-}" = 1 ]; then echo "dry-run: $*"; else "$@";
 {{ if eq .chezmoi.os "darwin" -}}
 eval "$(/opt/homebrew/bin/brew shellenv)"
 dir="$HOMEBREW_PREFIX/etc/wireguard"
+import_dir={{ printf "%s/.config/wireguard" .chezmoi.destDir | quote }}
 # wg-quick needs bash >= 4; sudo resets PATH to /bin/bash 3.2.
 wg_quick=(sudo "$HOMEBREW_PREFIX/bin/bash" "$HOMEBREW_PREFIX/bin/wg-quick")
 has_address() { ifconfig | grep "inet ${1%/*} " >/dev/null; }
@@ -87,6 +88,16 @@ tunnel() {
   tmp="$(mktemp)"
   chmod 600 "$tmp"
   printf '%s\n' "$config" > "$tmp"
+{{- if eq .chezmoi.os "darwin" }}
+
+  # Your own copy for WireGuard.app's "Import tunnel(s) from file".
+  mkdir -p "$import_dir"
+  chmod 700 "$import_dir"
+  if ! cmp -s "$tmp" "$import_dir/$iface.conf"; then
+    install -m 600 "$tmp" "$import_dir/$iface.conf"
+    echo "wireguard: $iface: wrote $import_dir/$iface.conf (for WireGuard.app import)"
+  fi
+{{- end }}
   if ! sudo -n cmp -s "$tmp" "$dir/$iface.conf" 2>/dev/null; then
     run sudo install -d -m 700 "$dir"
     run sudo install -m 600 "$tmp" "$dir/$iface.conf"
