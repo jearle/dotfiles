@@ -1,0 +1,44 @@
+#!/bin/bash
+set -uo pipefail
+
+usage() {
+    echo "Usage: clamshell [on|off|status]" >&2
+    echo "  on     - Keep Mac awake when the lid is closed" >&2
+    echo "  off    - Restore normal lid-sleep and enforce deep sleep" >&2
+    echo "  status - Show current settings" >&2
+    exit 1
+}
+
+[ $# -eq 1 ] || usage
+
+case "$1" in
+    on)
+        if sudo pmset -a disablesleep 1; then
+            echo "Sleep disabled. Mac stays awake with lid closed."
+            echo "⚠️  Do not put Mac in a bag while active — overheating risk."
+        else
+            echo "Failed to disable sleep." >&2
+            exit 1
+        fi
+        ;;
+    off)
+        if sudo pmset -a disablesleep 0 powernap 0 womp 0 tcpkeepalive 0; then
+            echo "Sleep enabled. Power Nap, Wake-on-LAN, and TCP keepalive disabled."
+        else
+            echo "Failed to enable sleep." >&2
+            exit 1
+        fi
+        ;;
+    status)
+        if pmset -g | grep -q "SleepDisabled.*1"; then
+            echo "Clamshell mode: ON (sleep disabled)"
+        else
+            echo "Clamshell mode: OFF (sleep enabled)"
+        fi
+        pmset -g custom | grep -E "powernap|womp|tcpkeepalive" | awk '{print "  " $0}'
+        ;;
+    *)
+        echo "Invalid option: $1" >&2
+        usage
+        ;;
+esac
